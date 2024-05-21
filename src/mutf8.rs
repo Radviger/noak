@@ -1052,20 +1052,12 @@ macro_rules! mutf8 {
     ($s:literal) => {{
         // Ensure that the code is executed in a const context.
         const MSTR: &$crate::mutf8::MStr = {
-            const BYTES: &[u8] = $crate::mutf8::__private_MUtf8Literal($s).as_slice();
-            if $crate::mutf8::__private_MUtf8Literal($s).is_str() {
-                let s = &$crate::mutf8::__private_utf8_to_mutf8::<
-                    { $crate::mutf8::__private_utf8_to_mutf8_length(BYTES) },
-                >(BYTES);
-                // SAFETY: The converted string is guaranteed to be valid modified UTF-8.
-                unsafe { $crate::mutf8::MStr::from_mutf8_unchecked(s) }
-            } else {
-                if !$crate::mutf8::__private_is_mutf8_valid(BYTES) {
-                    panic!("literal is not a valid modified UTF-8 string.");
-                }
-                // SAFETY: It was verified that the string is valid modified UTF-8.
-                unsafe { $crate::mutf8::MStr::from_mutf8_unchecked(BYTES) }
+            const BYTES: &'static [u8] = $crate::mutf8::__private_MUtf8Literal($s).as_slice();
+            if !$crate::mutf8::__private_is_mutf8_valid(BYTES) {
+                panic!("literal is not a valid modified UTF-8 string.");
             }
+            // SAFETY: It was verified that the string is valid modified UTF-8.
+            unsafe { $crate::mutf8::MStr::from_mutf8_unchecked(BYTES) }
         };
         MSTR
     }};
